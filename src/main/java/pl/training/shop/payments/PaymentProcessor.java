@@ -3,9 +3,11 @@ package pl.training.shop.payments;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.javamoney.moneta.Money;
+import org.springframework.stereotype.Component;
 import pl.training.shop.time.TimeProvider;
 
 @Log
+@Component
 @RequiredArgsConstructor
 public class PaymentProcessor implements PaymentService {
 
