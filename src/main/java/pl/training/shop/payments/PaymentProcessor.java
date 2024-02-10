@@ -1,32 +1,37 @@
 package pl.training.shop.payments;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.javamoney.moneta.Money;
-
-import java.time.Instant;
+import pl.training.shop.time.TimeProvider;
 
 @Log
-public class PaymentProcessor {
+@RequiredArgsConstructor
+public class PaymentProcessor implements PaymentService {
 
-    private static final String LOG_FORMAT = "A new payment of %s has been initiated";
 
-    private final PaymentIdGenerator paymentIdGenerator = new PaymentIdGenerator();
-    private final PaymentFeeCalculator paymentFeeCalculator = new PaymentFeeCalculator(0.01);
-    private final PaymentRepository paymentsRepository = new PaymentRepository();
+    private static final PaymentStatus DEFAULT_PAYMENT_STATUS = PaymentStatus.STARTED;
 
+    private final PaymentIdGenerator paymentIdGenerator;
+    private final PaymentFeeCalculator paymentFeeCalculator;
+    private final PaymentRepository paymentsRepository;
+    private final TimeProvider timeProvider;
+
+    @Override
     public Payment process(PaymentRequest paymentRequest) {
         var paymentValue = calculatePaymentValue(paymentRequest.getValue());
         var payment = createPayment(paymentValue);
-        log.info(LOG_FORMAT.formatted(payment.getValue()));
+
         return paymentsRepository.save(payment);
     }
+
 
     private Payment createPayment(Money paymentValue) {
         return Payment.builder()
                 .id(paymentIdGenerator.getNext())
                 .value(paymentValue)
-                .timestamp(Instant.now())
-                .status(PaymentStatus.STARTED)
+                .timestamp(timeProvider.getTimeStamp())
+                .status(DEFAULT_PAYMENT_STATUS)
                 .build();
     }
 
